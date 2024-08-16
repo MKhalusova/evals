@@ -91,4 +91,4 @@ if __name__ == "__main__":
     questions = prepare_questions(args.qa_dataset)
 
     collect_retrieval_results(questions, retriever,
-                              f"Retriever-{args.model_name.replace('/', '-')}-{args.n_documents_to_retrieve}_results.csv")
+                              f"retriever_results/{args.model_name.replace('/', '@')}-{args.n_documents_to_retrieve}.csv")
