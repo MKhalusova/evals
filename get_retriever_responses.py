@@ -18,6 +18,7 @@ def parse_arguments():
     parser.add_argument('--documents', type=str, default="local-ingest-output",
                         help='Location of the preprocessed documents to build a retriever with')
     parser.add_argument('--qa_dataset', type=str, default="qa_pairs_dataset.csv", help='Location of the eval dataset')
+    parser.add_argument('--output_directory', type=str, default="retriever_results", help='Location of the output')
 
     return parser.parse_args()
 
@@ -67,7 +68,7 @@ def setup_retriever(docs, embedding_model_name, k):
     return db.as_retriever(search_type="similarity", search_kwargs={"k": k})
 
 
-def collect_retrieval_results(questions, retriever, output_path):
+def collect_retrieval_results(questions, retriever, output_directory, model_name, n_documents_to_retrieve):
     results = []
     for question in questions:
         try:
@@ -77,9 +78,12 @@ def collect_retrieval_results(questions, retriever, output_path):
         except:
             print(f"Skipped question: {question}")
 
+    os.makedirs(output_directory, exist_ok=True)
+    file_path = os.path.join(output_directory, f"{model_name.replace('/', '@')}-{n_documents_to_retrieve}.csv")
+
     df = pd.DataFrame(results)
-    df.to_csv(output_path, index=False)
-    print(f"DataFrame saved to {output_path}")
+    df.to_csv(file_path, index=False)
+    print(f"DataFrame saved to {file_path}")
 
 
 if __name__ == "__main__":
@@ -90,5 +94,4 @@ if __name__ == "__main__":
 
     questions = prepare_questions(args.qa_dataset)
 
-    collect_retrieval_results(questions, retriever,
-                              f"retriever_results/{args.model_name.replace('/', '@')}-{args.n_documents_to_retrieve}.csv")
+    collect_retrieval_results(questions, retriever, args.output_directory, args.model_name, args.n_documents_to_retrieve)
